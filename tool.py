@@ -26,10 +26,12 @@ def extract(rom, bin, img, n3d, event):
         nds.extractRom(romfile, infolder, outfolder)
         common.logMessage("Decompressing files ...")
         common.makeFolder(infolderlz)
-        for file in common.showProgress(common.getFiles(infolder, [".bin", ".lz"])):
+        for file in common.showProgress(common.getFiles(infolder, [".bin", ".lz", ".plb"])):
+            common.makeFolders(infolderlz + os.path.dirname(file))
             if file.endswith("_LZ.bin") or file.endswith(".lz"):
-                common.makeFolders(infolderlz + os.path.dirname(file))
                 nds.decompressFile(infolder + file, infolderlz + file)
+            else:
+                common.copyFile(infolder + file, infolderlz + file)
         common.logMessage("Done!")
     if all or bin:
         import format_bin
@@ -57,7 +59,12 @@ def extract(rom, bin, img, n3d, event):
 
 @common.cli.command()
 @click.option("--no-rom", is_flag=True, default=False, hidden=True)
-def repack(no_rom):
+@click.option("--event", is_flag=True, default=False)
+def repack(no_rom, event):
+    all = not event
+    if all or event:
+        import format_event
+        format_event.repack(data)
     if not no_rom:
         if os.path.isdir(replacefolder):
             common.mergeFolder(replacefolder, outfolder)

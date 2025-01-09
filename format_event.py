@@ -2,6 +2,57 @@ import codecs
 import os
 from hacktools import common
 
+def readString(f):
+    addend = False
+    sjis = common.detectEncodedString(f, startascii=[0x23, 0x24, 0x25])
+    if sjis.endswith("$d"):
+        sjis = sjis[:-2]
+        addend = True
+    sjis = sjis.replace("$n", "|")
+    return sjis, addend
+
+
+def repack(data):
+    binin = data + "extract/data/msg/EventMsg.bin"
+    binout = data + "repack/data/msg/EventMsg.bin"
+    tfile = data + "event_input.txt"
+
+    common.logMessage("Repacking EVENT from", tfile, "...")
+    filesize = os.path.getsize(binin)
+    i = 0
+    chartot = transtot = 0
+    common.copyFile(binin, binout)
+    with codecs.open(tfile, "r", "utf-8") as f:
+        section = common.getSection(f, "")
+        chartot, transtot = common.getSectionPercentage(section, chartot, transtot)
+    with common.Stream(binout, "rb+") as fin:
+            while i * 0x90 < filesize:
+                fin.seek(i * 0x90)
+                addend = False
+                sjis, addend = readString(fin)
+                if sjis == "ｔｅｓｔ":
+                    i += 1
+                    continue
+                newsjis = ""
+                if sjis in section:
+                    newsjis = section[sjis].pop(0)
+                    if len(section[sjis]) == 0:
+                        del section[sjis]
+                if newsjis == "!":
+                    sjis = ""
+                elif newsjis != "":
+                    sjis = newsjis
+                    #sjis = common.wordwrap(sjis, glyphs, game.wordwrap, game.detectTextCode)
+                sjis = sjis.replace("|", "$n")
+                if addend:
+                    sjis += "$d"
+                fin.seek(i * 0x90)
+                fin.writeZero(0x90)
+                fin.seek(i * 0x90)
+                common.writeEncodedString(fin, sjis, 0x8f)
+                i += 1
+    common.logMessage("Done! Translation is at {0:.2f}%".format((100 * transtot) / chartot))
+
 
 def extract(data):
     binin = data + "extract/data/msg/EventMsg.bin"
@@ -14,14 +65,11 @@ def extract(data):
         with codecs.open(tfile, "w", "utf-8") as f:
             while i * 0x90 < filesize:
                 fin.seek(i * 0x90)
-                pos = fin.tell()
-                s = common.detectEncodedString(fin, startascii=[0x23, 0x24, 0x25])
-                if s.endswith("$d"):
-                    s = s[:-2]
-                s = s.replace("$n", "|")
+                #pos = fin.tell()
+                sjis, _ = readString(fin)
                 i += 1
-                if s == "ｔｅｓｔ":
+                if sjis == "ｔｅｓｔ":
                     continue
                 #f.write(common.toHex(pos))
-                f.write(s + "=\n")
+                f.write(sjis + "=\n")
     common.logMessage("Done! Extracted", i, "lines")
