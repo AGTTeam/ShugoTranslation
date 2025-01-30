@@ -84,15 +84,9 @@ def readIMG(file):
     return img, mapfile, indexedpalettes, width, height
 
 
-def readUncompressedIMG(file, palfile):
+def readUncompressedIMG(file, palfile, objfile=False):
     img = nitro.NCGR()
     img.tiles = []
-    width = 256
-    if "cfont_0" in file:
-        width = 16
-    elif "cfont_1" in file:
-        width = 8
-    height = 256
     filesize = os.path.getsize(palfile)
     with common.Stream(palfile, "rb") as f:
         # Read palette
@@ -102,7 +96,7 @@ def readUncompressedIMG(file, palfile):
         if palsize < pallen:
             pallen = palsize
         colornum = pallen // 2
-        if colornum > 16:
+        if colornum > 16 and not objfile:
             img.bpp = 8
         for i in range(palsize // pallen):
             palette = []
@@ -111,6 +105,17 @@ def readUncompressedIMG(file, palfile):
             palettes.append(palette)
         indexedpalettes = {i: palettes[i] for i in range(0, len(palettes))}
     filesize = os.path.getsize(file)
+    if not objfile:
+        width = 256
+        if "cfont_0" in file:
+            width = 16
+        elif "cfont_1" in file:
+            width = 8
+        height = 256
+    else:
+        width = 256
+        numpix = filesize * 8 / img.bpp
+        height = (filesize // (width // 8)) * 8
     with common.Stream(file, "rb") as f:
         # Read tiles
         tiledata = f.read()
@@ -139,5 +144,31 @@ def readImage(infolder, file, extension):
     return palettes, image, mapfile, None, width, height, "", ""
 
 
+def readOBJImage(infolder, file, extension):
+    palfile = ""
+    if "_ch" in file and "/lib_" not in file and "/tb_" not in file:
+        palfile = file.replace("_ch", "_pa")
+    elif "objchar" in file:
+        palfile = file.replace("objchar", "objplt")
+    if "Btl_Enemy_ch018.bin" in file:
+        palfile = ""
+    if palfile == "":
+        return None, None, None, None, 0, 0, "", ""
+    palfile = palfile.replace("menu_item_pa001.bin", "menu_item_pa000.bin")
+    palfile = palfile.replace("menu_item_pa003.bin", "menu_item_pa002.bin")
+    palfile = palfile.replace("Btl_Target_pa005.bin", "Btl_Target_pa004.bin")
+    palfile = palfile.replace("menu_info_pa003.bin", "menu_info_pa002.bin")
+    palfile = palfile.replace("menu_item_pa.bin", "menu_item_pa000.bin")
+    palfile = palfile.replace("menu_item_pa001.bin", "menu_item_pa000.bin")
+    palfile = palfile.replace("com_num32_pa", "com_num_pa")
+    palfile = palfile.replace("com_num_pa004.bin", "com_num_pa003.bin")
+    palfile = palfile.replace("com_num_pa006.bin", "com_num_pa005.bin")
+    palfile = palfile.replace("story_item_pa001.bin", "story_item_pa000.bin")
+    palfile = palfile.replace("story_item_pa002.bin", "story_item_pa000.bin")
+    image, mapfile, palettes, width, height = readUncompressedIMG(infolder + file, infolder + palfile, True)
+    return palettes, image, mapfile, None, width, height, "", ""
+
+
 def extract(data):
     nitro.extractIMG(data + "extract_LZ/data/bg/", data + "out_IMG/", [".bin"], readImage)
+    nitro.extractIMG(data + "extract_LZ/data/obj/", data + "out_OBJ/", [".bin"], readOBJImage)
