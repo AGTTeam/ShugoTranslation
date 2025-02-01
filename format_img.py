@@ -73,6 +73,7 @@ def readIMG(file):
             height = f.readUInt() * 8
             unk1 = f.readUInt()
             unk2 = f.readUInt()
+            common.logDebug("map data", width, height, common.toHex(unk1), common.toHex(unk2))
             mapdata = f.read(img.paloffset - img.mapoffset - 0x10)
             for i in range(0, len(mapdata), 2):
                 data = struct.unpack("<h", mapdata[i:i+2])[0]
@@ -139,10 +140,38 @@ def writeImage(workfolder, infolder, outfolder, file, image, palettes, map, cell
     palfile = file.replace(".bin", ".plb")
     if "_LZ" not in file and os.path.isfile(infolder + palfile):
         return image, palettes, map, cell, width, height, False
-    if "pbg005" not in file:
-        return None, None, None, None, 0, 0, False
     pngfile = file.replace(".bin", ".png")
-    nitro.writeNSCR(outfolder + file, image, map, workfolder + pngfile, palettes, width, height)
+    if map is None:
+        nitro.writeNCGR(outfolder + file, image, workfolder + pngfile, palettes, width, height)
+    else:
+        # Copy only up to the tile data
+        with common.Stream(infolder + file, "rb") as fin:
+            with common.Stream(outfolder + file, "wb") as f:
+                f.write(fin.read(image.tileoffset))
+        # Create temp map file and repack
+        if os.path.isfile("tempmap.bin"):
+            os.remove("tempmap.bin")
+        open("tempmap.bin", "w").close()
+        nitro.writeMappedNSCR(outfolder + file, "tempmap.bin", image, map, workfolder + pngfile, palettes, width, height, transptile=False, writelen=False)
+        with common.Stream("tempmap.bin", "rb") as f:
+            mapdata = f.read()
+        with common.Stream(infolder + file, "rb") as fin:
+            with common.Stream(outfolder + file, "rb+") as f:
+                f.seek(0, 2)
+                # Tile data is already in the image, write offsets
+                f.writeUShortAt(12, (f.tell() - image.tileoffset) // 32)
+                f.writeUIntAt(4, f.tell())
+                # Write map data
+                f.writeUInt(width // 8)
+                f.writeUInt(height // 8)
+                f.writeUInt(0)
+                f.writeUInt(0)
+                f.write(mapdata)
+                #Write palette data
+                f.writeUIntAt(8, f.tell())
+                fin.seek(fin.readUIntAt(8))
+                f.write(fin.read())
+        os.remove("tempmap.bin")
     return None, None, None, None, 0, 0, False
 
 
