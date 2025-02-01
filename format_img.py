@@ -12,9 +12,9 @@ def readIMG(file):
     filesize = os.path.getsize(file)
     with common.Stream(file, "rb") as f:
         # Read header
-        img.tileoff = f.readUInt()
-        img.mapoff = f.readUInt()
-        img.paloff = f.readUInt()
+        img.tileoffset = f.readUInt()
+        img.mapoffset = f.readUInt()
+        img.paloffset = f.readUInt()
         img.unk1 = f.readUShort()
         img.unk2 = f.readUShort()
         img.unk3 = f.readUShort()
@@ -30,8 +30,8 @@ def readIMG(file):
             height = img.unk8
         common.logDebug(vars(img))
         # Read palettes
-        f.seek(img.paloff)
-        palsize = filesize - img.paloff
+        f.seek(img.paloffset)
+        palsize = filesize - img.paloffset
         palettes = []
         pallen = 0x200
         if palsize < pallen:
@@ -51,9 +51,9 @@ def readIMG(file):
                 for j2 in range(img.tilesize):
                     tile.append(0)
             img.tiles.append(tile)
-        f.seek(img.tileoff)
-        tiledata = f.read((img.mapoff if img.mapoff > 0 else img.paloff) - img.tileoff)
-        tilelen = len(tiledata)
+        f.seek(img.tileoffset)
+        tilelen = (img.mapoffset if img.mapoffset > 0 else img.paloffset) - img.tileoffset
+        tiledata = f.read(tilelen)
         for i in range(tilelen // (8 * img.bpp)):
             singletile = []
             for j in range(img.tilesize * img.tilesize):
@@ -65,15 +65,15 @@ def readIMG(file):
                 singletile.append(index)
             img.tiles.append(singletile)
         # Read map
-        if img.mapoff > 0:
+        if img.mapoffset > 0:
             mapfile = nitro.NSCR()
             # Not sure why this is needed
-            f.seek(img.mapoff)
+            f.seek(img.mapoffset)
             width = f.readUInt() * 8
             height = f.readUInt() * 8
             unk1 = f.readUInt()
             unk2 = f.readUInt()
-            mapdata = f.read(img.paloff - img.mapoff - 0x10)
+            mapdata = f.read(img.paloffset - img.mapoffset - 0x10)
             for i in range(0, len(mapdata), 2):
                 data = struct.unpack("<h", mapdata[i:i+2])[0]
                 map = nitro.readMapData(data)
@@ -135,6 +135,17 @@ def readUncompressedIMG(file, palfile, objfile=False):
     return img, None, indexedpalettes, width, height
 
 
+def writeImage(workfolder, infolder, outfolder, file, image, palettes, map, cell, width, height):
+    palfile = file.replace(".bin", ".plb")
+    if "_LZ" not in file and os.path.isfile(infolder + palfile):
+        return image, palettes, map, cell, width, height, False
+    if "pbg005" not in file:
+        return None, None, None, None, 0, 0, False
+    pngfile = file.replace(".bin", ".png")
+    nitro.writeNSCR(outfolder + file, image, map, workfolder + pngfile, palettes, width, height)
+    return None, None, None, None, 0, 0, False
+
+
 def readImage(infolder, file, extension):
     palfile = file.replace(".bin", ".plb")
     if "_LZ" not in file and os.path.isfile(infolder + palfile):
@@ -169,6 +180,11 @@ def readOBJImage(infolder, file, extension):
     return palettes, image, mapfile, None, width, height, "", ""
 
 
+def repack(data):
+    nitro.repackIMG(data + "work_IMG/", data + "extract_LZ/data/bg/", data + "repack_LZ/data/bg/", [".bin"], readImage, writeImage, clean=True)
+
+
 def extract(data):
     nitro.extractIMG(data + "extract_LZ/data/bg/", data + "out_IMG/", [".bin"], readImage)
-    nitro.extractIMG(data + "extract_LZ/data/obj/", data + "out_OBJ/", [".bin"], readOBJImage)
+    # This would need reverse-engineering the style_*.bin files containing the cell data
+    # nitro.extractIMG(data + "extract_LZ/data/obj/", data + "out_OBJ/", [".bin"], readOBJImage)

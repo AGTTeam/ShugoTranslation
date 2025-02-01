@@ -8,7 +8,9 @@ romfile = "shugo.nds"
 rompatch = data + "shugo_patched.nds"
 infolder = data + "extract/"
 infolderlz = data + "extract_LZ/"
+repacklz = data + "repack_LZ/"
 replacefolder = data + "replace/"
+replacelz = data + "replace_LZ/"
 outfolder = data + "repack/"
 bannerfile = data + "repack/banner.bin"
 patchfile = data + "patch.xdelta"
@@ -32,6 +34,7 @@ def extract(rom, bin, img, n3d, event):
                 nds.decompressFile(infolder + file, infolderlz + file)
             else:
                 common.copyFile(infolder + file, infolderlz + file)
+        common.makeFolder(repacklz)
         common.logMessage("Done!")
     if all or bin:
         import format_bin
@@ -59,13 +62,26 @@ def extract(rom, bin, img, n3d, event):
 
 @common.cli.command()
 @click.option("--no-rom", is_flag=True, default=False, hidden=True)
+@click.option("--img", is_flag=True, default=False)
 @click.option("--event", is_flag=True, default=False)
-def repack(no_rom, event):
-    all = not event
+def repack(no_rom, img, event):
+    all = not img and not event
+    if all or img:
+        import format_img
+        format_img.repack(data)
     if all or event:
         import format_event
         format_event.repack(data)
     if not no_rom:
+        if os.path.isdir(replacelz):
+            common.mergeFolder(replacelz, repacklz)
+        common.logMessage("Compressing files ...")
+        for file in common.showProgress(common.getFiles(repacklz, [".bin", ".lz", ".plb"])):
+            if file.endswith("_LZ.bin") or file.endswith(".lz"):
+                nds.compressFile(repacklz + file, outfolder + file, nds.CompressionType.LZ10)
+            else:
+                common.copyFile(repacklz + file, outfolder + file)
+        common.logMessage("Done!")
         if os.path.isdir(replacefolder):
             common.mergeFolder(replacefolder, outfolder)
         nds.editBannerTitle(bannerfile, "Shugo Chara!\nNorinori! Chara-narhythm\nKonami Digital Entertainment")
