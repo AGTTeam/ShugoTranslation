@@ -19,18 +19,20 @@
 
   LOAD_ASCII:
   ;r1=character to convert
+  ;r0 = r1 & 0xff
   ;r2=other character if this is s-sjis
   ;r4=str pointer
   ;r9=str index
   push {r3-r4}
-  cmp r1,0x7f
+  cmp r0,0x7f
   bgt @@sjis
   ;If the character is ascii, convert it to sjis
   ldr r3,=SJIS_LOOKUP
-  sub r4,r1,0x20
+  sub r4,r0,0x20
   lsl r4,r4,0x2
   add r3,r3,r4
   ldrb r1,[r3]
+  and r0,r1,0xff
   ldrb r2,[r3,0x1]
   ldrb r4,[r3,0x2]
   ;Save the VWF value and set IS_ASCII to 1
@@ -54,17 +56,18 @@
 
   ;Same as above but r0/r1 are the characters and we just need to convert
   LOAD_ASCII2:
-  cmp r0,0x7f
+  push {r3-r5}
+  and r5,r0,0xff
+  cmp r5,0x7f
   bgt @@ret
-  push {r3-r4}
   ldr r3,=SJIS_LOOKUP
-  sub r4,r0,0x20
+  sub r4,r5,0x20
   lsl r4,r4,0x2
   add r3,r3,r4
   ldrb r0,[r3]
   ldrb r1,[r3,0x1]
-  pop {r3-r4}
   @@ret:
+  pop {r3-r5}
   mov r0,r0,lsl 0x10
   bx lr
   .pool

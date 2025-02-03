@@ -54,7 +54,7 @@ def repack(data):
                 if newsjis == "!":
                     sjis = ""
                 elif newsjis != "":
-                    sjis = newsjis
+                    sjis = newsjis.replace("‘", "[").replace("’", "]").replace("“", "{").replace("”", "}")
                     sjis = common.wordwrap(sjis, glyphs, wordwrap, detectTextCode)
                 sjis = sjis.replace("|", "$n")
                 if addend:
@@ -92,7 +92,9 @@ def detectTextCode(s, i=0):
     if s[i] == "#":
         return 2
     if s[i] == "$":
+        if s[i+1] == "t" or s[i+1] == "s" or s[i+1] == "v":
+            return 4
         if s[i+1] == "c":
-            3
+            return 3
         return 2
     return 0

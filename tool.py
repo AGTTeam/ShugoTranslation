@@ -2,7 +2,7 @@ import click
 import os
 from hacktools import common, nds, nitro
 
-version = "0.2.0"
+version = "0.3.0"
 data = "ShugoData/"
 romfile = "shugo.nds"
 rompatch = data + "shugo_patched.nds"
