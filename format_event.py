@@ -2,6 +2,8 @@ import codecs
 import os
 from hacktools import common
 
+wordwrap = 180
+
 def readString(f):
     addend = False
     sjis = common.detectEncodedString(f, startascii=[0x23, 0x24, 0x25])
@@ -18,6 +20,17 @@ def repack(data):
     tfile = data + "event_input.txt"
 
     common.logMessage("Repacking EVENT from", tfile, "...")
+    glyphs = {}
+    with codecs.open(data + "fontconfig.txt", "r", "utf-8") as f:
+        section = common.getSection(f, "", inorder=True)
+        ascii = 0x20
+        for c in section:
+            charid = c["name"].replace("～", "〜").encode("shift-jis")
+            charlen = int(c["value"])
+            glyphs[chr(ascii)] = common.FontGlyph(0, charlen, charlen + 2)
+            glyphs[charid] = common.FontGlyph(0, charlen, charlen + 2)
+            ascii += 1
+
     filesize = os.path.getsize(binin)
     i = 0
     chartot = transtot = 0
@@ -42,7 +55,7 @@ def repack(data):
                     sjis = ""
                 elif newsjis != "":
                     sjis = newsjis
-                    #sjis = common.wordwrap(sjis, glyphs, game.wordwrap, game.detectTextCode)
+                    sjis = common.wordwrap(sjis, glyphs, wordwrap, detectTextCode)
                 sjis = sjis.replace("|", "$n")
                 if addend:
                     sjis += "$d"
@@ -73,3 +86,13 @@ def extract(data):
                 #f.write(common.toHex(pos))
                 f.write(sjis + "=\n")
     common.logMessage("Done! Extracted", i, "lines")
+
+
+def detectTextCode(s, i=0):
+    if s[i] == "#":
+        return 2
+    if s[i] == "$":
+        if s[i+1] == "c":
+            3
+        return 2
+    return 0
