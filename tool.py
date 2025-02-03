@@ -2,7 +2,7 @@ import click
 import os
 from hacktools import common, nds, nitro
 
-version = "0.1.0"
+version = "0.2.0"
 data = "ShugoData/"
 romfile = "shugo.nds"
 rompatch = data + "shugo_patched.nds"
@@ -64,14 +64,18 @@ def extract(rom, bin, img, n3d, event):
 @click.option("--no-rom", is_flag=True, default=False, hidden=True)
 @click.option("--img", is_flag=True, default=False)
 @click.option("--event", is_flag=True, default=False)
-def repack(no_rom, img, event):
-    all = not img and not event
+@click.option("--bin", is_flag=True, default=False)
+def repack(no_rom, img, event, bin):
+    all = not img and not event and not bin
     if all or img:
         import format_img
         format_img.repack(data)
     if all or event:
         import format_event
         format_event.repack(data)
+    if all or bin:
+        import format_bin
+        format_bin.repack(data)
     if not no_rom:
         if os.path.isdir(replacelz):
             common.mergeFolder(replacelz, repacklz)
