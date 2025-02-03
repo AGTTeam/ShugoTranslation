@@ -36,7 +36,7 @@ def repack(data):
     chartot = transtot = 0
     common.copyFile(binin, binout)
     with codecs.open(tfile, "r", "utf-8") as f:
-        section = common.getSection(f, "")
+        section = common.getSection(f, "", comment="##")
         chartot, transtot = common.getSectionPercentage(section, chartot, transtot)
     with common.Stream(binout, "rb+") as fin:
             while i * 0x90 < filesize:
