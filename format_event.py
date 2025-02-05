@@ -2,7 +2,7 @@ import codecs
 import os
 from hacktools import common
 
-wordwrap = 180
+wordwrap = 311
 
 def readString(f):
     addend = False
@@ -54,7 +54,7 @@ def repack(data):
                 if newsjis == "!":
                     sjis = ""
                 elif newsjis != "":
-                    sjis = newsjis.replace("‘", "[").replace("’", "]").replace("“", "{").replace("”", "}")
+                    sjis = newsjis.replace("‘", "[").replace("’", "]").replace("“", "{").replace("”", "}").replace("♪", "/").replace("×", "@")
                     sjis = common.wordwrap(sjis, glyphs, wordwrap, detectTextCode)
                 sjis = sjis.replace("|", "$n")
                 if addend:
