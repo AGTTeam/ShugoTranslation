@@ -3,6 +3,9 @@ import struct
 from hacktools import common, nitro
 
 
+preservemap = ["pmg2a_1_LZ.bin", "pmg2a_2_LZ.bin", "Oekaki/pmg1a_1_LZ.bin", "Oekaki/pmg1b_1_LZ.bin"]
+
+
 def readIMG(file):
     img = nitro.NCGR()
     img.tiles = []
@@ -143,6 +146,8 @@ def writeImage(workfolder, infolder, outfolder, file, image, palettes, map, cell
     pngfile = file.replace(".bin", ".png")
     if map is None:
         nitro.writeNCGR(outfolder + file, image, workfolder + pngfile, palettes, width, height)
+    elif file in preservemap:
+        nitro.writeNSCR(outfolder + file, image, map, workfolder + pngfile, palettes, width, height, skipfirst=True)
     else:
         # Copy only up to the tile data
         with common.Stream(infolder + file, "rb") as fin:
@@ -167,7 +172,7 @@ def writeImage(workfolder, infolder, outfolder, file, image, palettes, map, cell
                 f.writeUInt(0)
                 f.writeUInt(0)
                 f.write(mapdata)
-                #Write palette data
+                # Write palette data
                 f.writeUIntAt(8, f.tell())
                 fin.seek(fin.readUIntAt(8))
                 f.write(fin.read())
