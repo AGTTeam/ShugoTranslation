@@ -119,4 +119,89 @@
   .org 0x02035a68
   ;add r1,r1,0xe
   bl VWF
+
+  ;The amount of characters for each phone key
+  .org 0x0208b894
+  .db 0x2 ;1
+  .db 0x3 ;2
+  .db 0x3 ;3
+  .db 0x3 ;4
+  .db 0x3 ;5
+  .db 0x3 ;6
+  .db 0x4 ;7
+  .db 0x3 ;8
+  .db 0x4 ;9
+  .db 0x1 ;0
+
+  ;Redefine the characters for each key
+  ;no need to change the pointer since there's enough space
+  ;1 key
+  .org 0x020921e4
+  .area 10*2
+  .dh 0x8149 ;"！"
+  .dh 0x8148 ;"？"
+  .endarea
+  ;2 key
+  .org 0x0209217a
+  .area 5*2
+  .dh 0x8260 ;"Ａ"
+  .dh 0x8261 ;"Ｂ"
+  .dh 0x8262 ;"Ｃ"
+  .endarea
+  ;3 key
+  .org 0x02092198
+  .area 5*2
+  .dh 0x8263 ;"Ｄ"
+  .dh 0x8264 ;"Ｅ"
+  .dh 0x8265 ;"Ｆ"
+  .endarea
+  ;4 key
+  .org 0x020921cc
+  .area 6*2
+  .dh 0x8266 ;"Ｇ"
+  .dh 0x8267 ;"Ｈ"
+  .dh 0x8268 ;"Ｉ"
+  .endarea
+  ;5 key
+  .org 0x02092170
+  .area 5*2
+  .dh 0x8268 ;"Ｊ"
+  .dh 0x826a ;"Ｋ"
+  .dh 0x826b ;"Ｌ"
+  .endarea
+  ;6 key
+  .org 0x0209218e
+  .area 5*2
+  .dh 0x826c ;"Ｍ"
+  .dh 0x826d ;"Ｎ"
+  .dh 0x826e ;"Ｏ"
+  .endarea
+  ;7 key
+  .org 0x020921b6
+  .area 5*2
+  .dh 0x826f ;"Ｐ"
+  .dh 0x8270 ;"Ｑ"
+  .dh 0x8271 ;"Ｒ"
+  .dh 0x8272 ;"Ｓ"
+  .endarea
+  ;8 key
+  .org 0x020921d8
+  .area 6*2
+  .dh 0x8273 ;"Ｔ"
+  .dh 0x8274 ;"Ｕ"
+  .dh 0x8275 ;"Ｖ"
+  .endarea
+  ;9 key
+  .org 0x02092166
+  .area 5*2
+  .dh 0x8276 ;"Ｗ"
+  .dh 0x8277 ;"Ｘ"
+  .dh 0x8278 ;"Ｙ"
+  .dh 0x8279 ;"Ｚ"
+  .endarea
+  ;0 key
+  .org 0x020921a2
+  .area 5*2
+  .dh 0x8140 ;"　"
+  .endarea
 .close
