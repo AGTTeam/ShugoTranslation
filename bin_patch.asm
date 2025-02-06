@@ -2,7 +2,7 @@
 
 .open "ShugoData/repack/arm9.bin",0x021d1000 - 0x938c0 ;fix first value is wrong
   .orga 0x938c0
-  .area 0x300
+  .area 0x500
 
   ;ASCII to SJIS lookup table, also includes VWF values
   SJIS_LOOKUP:
@@ -12,6 +12,13 @@
   IS_ASCII:
   .dw 0
   VWF_LEN:
+  .dw 0
+
+  IS_ASCII_BIN:
+  .dw 0
+  VWF_LEN_BIN:
+  .dw 0
+  APPLY_BIN:
   .dw 0
 
   ;r0=
@@ -93,10 +100,95 @@
   pop {r0}
   bx lr
   .pool
+
+  ;Again the same as above but convert r2/r1 and store the value in a separate addr
+  LOAD_ASCII_BIN:
+  push {r3-r5}
+  ldr r3,=APPLY_BIN
+  ldr r3,[r3]
+  cmp r3,0x0
+  beq @@ret
+  and r5,r2,0xff
+  cmp r5,0x7f
+  bgt @@sjis
+  ldr r3,=SJIS_LOOKUP
+  sub r4,r5,0x20
+  lsl r4,r4,0x2
+  add r3,r3,r4
+  ldrb r2,[r3]
+  ldrb r1,[r3,0x1]
+  ldrb r4,[r3,0x2]
+  ;Save the VWF value and set IS_ASCII_BIN to 1
+  ldr r3,=IS_ASCII_BIN
+  str r4,[r3,0x4]
+  mov r4,1
+  str r4,[r3]
+  b @@ret
+  @@sjis:
+  ;Set IS_ASCII_BIN to 0, set vwf value to the fixed value and return
+  ldr r3,=IS_ASCII_BIN
+  mov r4,0
+  str r4,[r3]
+  mov r4,0xc
+  str r4,[r3,0x4]
+  @@ret:
+  pop {r3-r5}
+  mov r0,r2,lsl 0x10
+  bx lr
+  .pool
+
+  ADVANCE_SCRIPT_BIN:
+  push {r1-r2}
+  ldr r1,=IS_ASCII_BIN
+  ldr r2,[r1]
+  cmp r2,1
+  addne r0,r0,0x2
+  addeq r0,r0,0x1
+  mov r2,0
+  str r2,[r1]
+  pop {r1-r2}
+  bx lr
+  .pool
+
+  VWF_BIN:
+  push {r2}
+  ldr r2,=APPLY_BIN
+  ldr r2,[r2]
+  cmp r2,0x0
+  addeq r0,r1,r0
+  beq @@ret
+  ldr r2,=VWF_LEN_BIN
+  ldr r2,[r2]
+  add r0,r1,r2
+  @@ret:
+  pop {r2}
+  bx lr
+  .pool
+
+  ;Wrap this function call so we only apply VWF when it's called from a specific function
+  ;We don't need it in other places like the password menu
+  WRAP_PRINT_BIN_STR:
+  push {lr}
+  push {r0-r1}
+  ldr r0,=APPLY_BIN
+  mov r1,0x1
+  str r1,[r0]
+  pop {r0-r1}
+  bl 0x020693f4
+  push {r0-r1}
+  ldr r0,=APPLY_BIN
+  mov r1,0x0
+  str r1,[r0]
+  pop {r0-r1}
+  pop {lr}
+  bx lr
+  .pool
   .endarea
 .close
 
 .open "ShugoData/repack/arm9.bin",0x02000000
+  ;Event ASCII/VWF
+
   ;Don't skip ASCII characters
   .org 0x0203592c
   ;bcc 0x02035a7c
@@ -119,6 +211,45 @@
   .org 0x02035a68
   ;add r1,r1,0xe
   bl VWF
+
+
+  ;BIN ASCII/VWF
+
+  ;Don't skip ASCII characters
+  .org 0x02069424
+  ;bcc 0x02069600
+  nop
+
+  ;Jump here to convert character to SJIS
+  .org 0x02069444
+  ;mov r0,r2,lsl 0x10
+  bl LOAD_ASCII_BIN
+
+  ;Always jump here, don't limit line length
+  .org 0x020695c4
+  ;bge 0x020695e0
+  b 0x020695e0
+
+  ;Apply VWF here
+  .org 0x020695e8
+  ;add r0,r1,r0
+  bl VWF_BIN
+
+  ;Only advance 1 byte if char was ASCII
+  .org 0x020695f4
+  ;add r0,r0,0x2
+  bl ADVANCE_SCRIPT_BIN
+
+  ;Wrap these calls so we know when to apply the VWF
+  .org 0x0206939c
+  ;bl 0x020693f4
+  bl WRAP_PRINT_BIN_STR
+  .org 0x020693d0
+  ;bl 0x020693f4
+  bl WRAP_PRINT_BIN_STR
+
+
+  ;Password menu
 
   ;The amount of characters for each phone key
   .org 0x0208b894
@@ -165,7 +296,7 @@
   ;5 key
   .org 0x02092170
   .area 5*2
-  .dh 0x8268 ;"Ｊ"
+  .dh 0x8269 ;"Ｊ"
   .dh 0x826a ;"Ｋ"
   .dh 0x826b ;"Ｌ"
   .endarea

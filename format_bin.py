@@ -2,7 +2,7 @@ import codecs
 from hacktools import common, nds
 
 binrange = [(0x930b8, 0x9327f)]
-freeranges = [(0x938c0+0x300, 0x938c0+0x1000, True)]
+freeranges = [(0x938c0+0x500, 0x938c0+0x1000, True)]
 
 def repack(data):
     binin = data + "extract/arm9.bin"
