@@ -1,8 +1,9 @@
 import click
+import codecs
 import os
 from hacktools import common, nds, nitro
 
-version = "0.5.0"
+version = "0.6.0"
 data = "ShugoData/"
 romfile = "shugo.nds"
 rompatch = data + "shugo_patched.nds"
@@ -90,6 +91,15 @@ def repack(no_rom, img, event, bin):
             common.mergeFolder(replacefolder, outfolder)
         nds.editBannerTitle(bannerfile, "Shugo Chara!\nNorinori! Chara-narhythm\nKonami Digital Entertainment")
         nds.repackRom(romfile, rompatch, outfolder, patchfile)
+
+
+@common.cli.command(hidden=True)
+def pswconfig():
+    with codecs.open(data + "pswconfig.txt", "r", "utf-8") as f:
+        section = common.getSection(f, "", inorder=True)
+    for c in section:
+        charid = common.toHex(int.from_bytes(c["value"].replace("～", "〜").encode("shift-jis")))
+        common.logMessage(".dh 0x" + charid + " ;" + c["name"] + "/" + c["value"])
 
 
 if __name__ == "__main__":

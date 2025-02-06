@@ -253,86 +253,87 @@
 
   ;The amount of characters for each phone key
   .org 0x0208b894
-  .db 0x2 ;1
+  .db 0x3 ;1
   .db 0x3 ;2
   .db 0x3 ;3
   .db 0x3 ;4
   .db 0x3 ;5
   .db 0x3 ;6
-  .db 0x4 ;7
+  .db 0x3 ;7
   .db 0x3 ;8
-  .db 0x4 ;9
-  .db 0x1 ;0
+  .db 0x2 ;9
+  .db 0x4 ;0
 
   ;Redefine the characters for each key
   ;no need to change the pointer since there's enough space
   ;1 key
   .org 0x020921e4
   .area 10*2
-  .dh 0x8149 ;"！"
-  .dh 0x8148 ;"？"
+  .dh 0x8344 ;Ａ/ゥ
+  .dh 0x8345 ;Ｂ/ウ
+  .dh 0x8346 ;Ｃ/ェ
   .endarea
   ;2 key
   .org 0x0209217a
   .area 5*2
-  .dh 0x8260 ;"Ａ"
-  .dh 0x8261 ;"Ｂ"
-  .dh 0x8262 ;"Ｃ"
+  .dh 0x8347 ;Ｄ/エ
+  .dh 0x8348 ;Ｅ/ォ
+  .dh 0x8349 ;Ｆ/オ
   .endarea
   ;3 key
   .org 0x02092198
   .area 5*2
-  .dh 0x8263 ;"Ｄ"
-  .dh 0x8264 ;"Ｅ"
-  .dh 0x8265 ;"Ｆ"
+  .dh 0x834a ;Ｇ/カ
+  .dh 0x834b ;Ｈ/ガ
+  .dh 0x834c ;Ｉ/キ
   .endarea
   ;4 key
   .org 0x020921cc
   .area 6*2
-  .dh 0x8266 ;"Ｇ"
-  .dh 0x8267 ;"Ｈ"
-  .dh 0x8268 ;"Ｉ"
+  .dh 0x834d ;Ｊ/ギ
+  .dh 0x834e ;Ｋ/ク
+  .dh 0x834f ;Ｌ/グ
   .endarea
   ;5 key
   .org 0x02092170
   .area 5*2
-  .dh 0x8269 ;"Ｊ"
-  .dh 0x826a ;"Ｋ"
-  .dh 0x826b ;"Ｌ"
+  .dh 0x8350 ;Ｍ/ケ
+  .dh 0x8351 ;Ｎ/ゲ
+  .dh 0x8352 ;Ｏ/コ
   .endarea
   ;6 key
   .org 0x0209218e
   .area 5*2
-  .dh 0x826c ;"Ｍ"
-  .dh 0x826d ;"Ｎ"
-  .dh 0x826e ;"Ｏ"
+  .dh 0x8353 ;Ｐ/ゴ
+  .dh 0x8354 ;Ｑ/サ
+  .dh 0x8355 ;Ｒ/ザ
   .endarea
   ;7 key
   .org 0x020921b6
   .area 5*2
-  .dh 0x826f ;"Ｐ"
-  .dh 0x8270 ;"Ｑ"
-  .dh 0x8271 ;"Ｒ"
-  .dh 0x8272 ;"Ｓ"
+  .dh 0x8356 ;Ｓ/シ
+  .dh 0x8357 ;Ｔ/ジ
+  .dh 0x8358 ;Ｕ/ス
   .endarea
   ;8 key
   .org 0x020921d8
   .area 6*2
-  .dh 0x8273 ;"Ｔ"
-  .dh 0x8274 ;"Ｕ"
-  .dh 0x8275 ;"Ｖ"
+  .dh 0x8359 ;Ｖ/ズ
+  .dh 0x835a ;Ｗ/セ
+  .dh 0x835b ;Ｘ/ゼ
   .endarea
   ;9 key
   .org 0x02092166
   .area 5*2
-  .dh 0x8276 ;"Ｗ"
-  .dh 0x8277 ;"Ｘ"
-  .dh 0x8278 ;"Ｙ"
-  .dh 0x8279 ;"Ｚ"
+  .dh 0x835c ;Ｙ/ソ
+  .dh 0x835d ;Ｚ/ゾ
   .endarea
   ;0 key
   .org 0x020921a2
   .area 5*2
-  .dh 0x8140 ;"　"
+  .dh 0x8340 ;　/ァ
+  .dh 0x8341 ;！/ア
+  .dh 0x8342 ;？/ィ
+  .dh 0x8343 ;＆/イ
   .endarea
 .close
