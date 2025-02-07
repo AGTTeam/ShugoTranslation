@@ -21,9 +21,6 @@
   APPLY_BIN:
   .dw 0
 
-  ;r0=
-  CHECK_ASCII:
-
   LOAD_ASCII:
   ;r1=character to convert
   ;r0 = r1 & 0xff
@@ -183,6 +180,23 @@
   pop {lr}
   bx lr
   .pool
+
+  LOAD_DAKUTEN_LIST:
+  cmp r5,0x9
+  ldrne r2,[r2,r5,lsl 0x2]
+  bne @@ret
+  ldr r2,=DAKUTEN_LIST
+  @@ret:
+  bx lr
+  .pool
+  
+  LOAD_DAKUTEN_NUM:
+  cmp r5,0x9
+  moveq r1,0x3
+  beq @@ret
+  ldrb r1,[r0,r5]
+  @@ret:
+  bx lr
   .endarea
 .close
 
@@ -251,6 +265,25 @@
 
   ;Password menu
 
+  ;Change the behavior of the dakuten button to act as a normal one
+  ;Jump to the other button execution instead of the dakuten code
+  .org 0x02067e5c
+  ;beq 0x02067e6c
+  beq 0x02067fec
+
+  ;Load the correct key list
+  .org 0x02068044
+  ;ldr r2,[r2,r5,lsl 0x2]
+  bl LOAD_DAKUTEN_LIST
+  .org 0x020680d8
+  ;ldr r2,[r2,r5,lsl 0x2]
+  bl LOAD_DAKUTEN_LIST
+
+  ;Load the correct character num
+  .org 0x020680bc
+  ;ldrb r1,[r0,r5]
+  bl LOAD_DAKUTEN_NUM
+
   ;The amount of characters for each phone key
   .org 0x0208b894
   .db 0x3 ;1
@@ -262,7 +295,7 @@
   .db 0x3 ;7
   .db 0x3 ;8
   .db 0x2 ;9
-  .db 0x4 ;0
+  .db 0x1 ;0
 
   ;Redefine the characters for each key
   ;no need to change the pointer since there's enough space
@@ -332,6 +365,7 @@
   .org 0x020921a2
   .area 5*2
   .dh 0x8340 ;　/ァ
+  DAKUTEN_LIST:
   .dh 0x8341 ;！/ア
   .dh 0x8342 ;？/ィ
   .dh 0x8343 ;＆/イ
