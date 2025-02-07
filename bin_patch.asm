@@ -244,6 +244,17 @@
   ;bge 0x020695e0
   b 0x020695e0
 
+  ;Extend the max len for these lines
+  .org 0x02071c4c
+  ;mov r1,0x19
+  mov r1,0x30
+  .org 0x02071c8c
+  ;mov r1,0x19
+  mov r1,0x30
+  .org 0x02071ccc
+  ;mov r1,0x19
+  mov r1,0x30
+
   ;Apply VWF here
   .org 0x020695e8
   ;add r0,r1,r0
