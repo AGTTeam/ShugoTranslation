@@ -230,6 +230,10 @@
   .org 0x020356bc
   ;add r0,r0,0x17
   add r0,r0,0x10
+  ;Move everything up
+  .org 0x0203ad9c
+  ;mov r2,0x98
+  mov r2,0x90
 
 
   ;BIN ASCII/VWF
