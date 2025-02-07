@@ -226,6 +226,11 @@
   ;add r1,r1,0xe
   bl VWF
 
+  ;Decrease line height
+  .org 0x020356bc
+  ;add r0,r0,0x17
+  add r0,r0,0x10
+
 
   ;BIN ASCII/VWF
 
