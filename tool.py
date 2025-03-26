@@ -1,9 +1,9 @@
 import click
 import codecs
 import os
-from hacktools import common, nds, nitro
+from hacktools import common, nds
 
-version = "0.6.0"
+version = "0.7.0"
 data = "ShugoData/"
 romfile = "shugo.nds"
 rompatch = data + "shugo_patched.nds"
@@ -44,18 +44,8 @@ def extract(rom, bin, img, n3d, event):
         import format_img
         format_img.extract(data)
     if all or n3d:
-        common.logMessage("Extracting N3D ...")
-        n3din = infolderlz + "data/n3d/"
-        n3dout = data + "out_N3D/"
-        common.makeFolder(n3dout)
-        for file in common.showProgress(common.getFiles(n3din, [".bin"])):
-            if file.endswith("tx_LZ.bin"):
-                nsbmd = nitro.readNSBTX(n3din + file)
-                if nsbmd is not None and len(nsbmd.textures) > 0:
-                    common.makeFolders(n3dout + os.path.dirname(file))
-                    for texi in range(len(nsbmd.textures)):
-                        nitro.drawNSBMD(n3dout + file.replace(".bin", "") + "_" + nsbmd.textures[texi].name + ".png", nsbmd, texi)
-        common.logMessage("Done!")
+        import format_n3d
+        format_n3d.extract(data)
     if all or event:
         import format_event
         format_event.extract(data)
@@ -64,13 +54,17 @@ def extract(rom, bin, img, n3d, event):
 @common.cli.command()
 @click.option("--no-rom", is_flag=True, default=False, hidden=True)
 @click.option("--img", is_flag=True, default=False)
+@click.option("--n3d", is_flag=True, default=False)
 @click.option("--event", is_flag=True, default=False)
 @click.option("--bin", is_flag=True, default=False)
-def repack(no_rom, img, event, bin):
-    all = not img and not event and not bin
+def repack(no_rom, img, n3d, event, bin):
+    all = not img and not n3d and not event and not bin
     if all or img:
         import format_img
         format_img.repack(data)
+    if all or n3d:
+        import format_n3d
+        format_n3d.repack(data)
     if all or event:
         import format_event
         format_event.repack(data)
