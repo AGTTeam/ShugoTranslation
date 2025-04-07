@@ -2,7 +2,7 @@ import codecs
 import os
 from hacktools import common
 
-wordwrap = 311
+wordwrap = 307
 
 def readString(f):
     addend = False
