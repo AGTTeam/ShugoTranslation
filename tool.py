@@ -83,7 +83,7 @@ def repack(no_rom, img, n3d, event, bin):
         common.logMessage("Done!")
         if os.path.isdir(replacefolder):
             common.mergeFolder(replacefolder, outfolder)
-        nds.editBannerTitle(bannerfile, "Shugo Chara!\nNorinori! Chara-narhythm\nKonami Digital Entertainment")
+        nds.editBannerTitle(bannerfile, "Shugo Chara!\n  Rhythm Transformation  \nKonami Digital Entertainment")
         nds.repackRom(romfile, rompatch, outfolder, patchfile)
 
 
