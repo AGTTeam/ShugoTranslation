@@ -1,4 +1,5 @@
 # Shugo Translation
+This repository is for the tool used to translate the game. If you're looking for the English patch, click [here](https://agtteam.net/shugo).  
 ## Setup
 Install [Python 3](https://www.python.org/downloads/).
 Download this repository by downloading and extracting it, or cloning it.
